@@ -1,11 +1,11 @@
 #include <FL/Fl.H>
 #include <FL/Fl_Float_Input.H>
-#include <Fl/Fl_Box.H>
-#include <Fl/Fl_Double_Window.H>
-#include <Fl/Fl_Input_Choice.H>
+#include <FL/Fl_Box.H>
+#include <FL/Fl_Double_Window.H>
+#include <FL/Fl_Input_Choice.H>
+#include <FL/Fl_Button.H>
 #include <string>
 #include <vector>
-#include <FL/Fl_Button.H>
 #include <cstring>
 #include <stdlib.h>
 #include <map>
@@ -23,7 +23,7 @@ const static char* row_header[ROWS] = {
             "Mass","Molar mass","Moles","Volume", "Molarity"
         };
 
-// Constants: row_header in enum each header as exponent of 2. THE ORDER OF ITEMS IN row_header AND RowEnum SHOULD MATCH, ELSE THE CALCULTATIONS WILL BE MESSED UP
+// Constants: row_header in enum, each header should convert to binary with "on" for corresponding header bit (read right to left). THE ORDER OF ITEMS IN row_header AND RowEnum SHOULD MATCH, ELSE THE CALCULTATIONS WILL BE MESSED UP
 enum RowEnum {
     mass = 1,
     molar_mass = 2,

@@ -73,7 +73,7 @@
         <linkerTool>
           <stripSymbols>true</stripSymbols>
           <linkerCopySharedLibs>true</linkerCopySharedLibs>
-          <commandLine>-static -Os `fltk-config --ldstaticflags`</commandLine>
+          <commandLine>icon.o -static -Os `fltk-config --ldstaticflags`</commandLine>
         </linkerTool>
       </compileType>
       <item path=".gitignore" ex="false" tool="3" flavor2="0">

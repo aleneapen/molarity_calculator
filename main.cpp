@@ -12,6 +12,10 @@
 #include <bitset>
 
 
+#include <FL/x.H> // For windows icon
+#include <windows.h> // For windows icon
+
+
 #define COLS 4
 #define ROWS 5
 #define WIDTH 500
@@ -300,7 +304,7 @@ int main()
     
     Fl_Double_Window win(WIDTH,HEIGHT,"Molarity Calculator");
     Calculator calc(10,10,480,480);
-    
+    win.icon((char*)LoadIcon(fl_display,MAKEINTRESOURCE(101)));
     win.show();
     
     return (Fl::run());

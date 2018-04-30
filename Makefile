@@ -53,8 +53,11 @@ CCADMIN=CCadmin
 # build
 build: .build-post
 
-.build-pre:
+.build-pre: 
 # Add your pre 'build' code here...
+	echo 101 ICON DISCARDABLE "icons.windows/icon.ico" > icon.rc
+	windres icon.rc icon.o
+
 
 .build-post: .build-impl
 # Add your post 'build' code here...

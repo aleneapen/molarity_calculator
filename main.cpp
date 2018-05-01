@@ -11,10 +11,11 @@
 #include <map>
 #include <bitset>
 
-
+// For window icon on windows
+#ifdef __MINGW32__
 #include <FL/x.H> // For windows icon
 #include <windows.h> // For windows icon
-
+#endif
 
 #define COLS 4
 #define ROWS 5
@@ -152,6 +153,7 @@ void clear_cb(Fl_Widget*, void*);
 // The Calculator container
 class Calculator: public Fl_Group {
     void* w[ROWS][COLS];        // widget pointers
+    Fl_Button* clear_button;
     
 public:
     
@@ -208,17 +210,11 @@ public:
                 text_widget->labelfont(ft);
                 
             }
-//            else if (*p == '0') 
-//            {
-//                text_widget->labelcolor(Colour::black);
-//                text_widget->labelfont(FontType::normal);
-//            }
             text_widget->redraw_label();
             
             
         }
 
-//        ((Fl_Widget *)(w[p][0]))->labelcolor(c);
     }
     
     
@@ -281,18 +277,78 @@ public:
         }
         yy+=10;
         // Instructions
-        Fl_Box* instruction_box = new Fl_Box(20,yy,WIDTH - 40,50);
+        Fl_Box* instruction_box = new Fl_Box(20,yy,WIDTH - 40,80);
         instruction_box->box(FL_FLAT_BOX);
         instruction_box->align(FL_ALIGN_INSIDE|FL_ALIGN_WRAP|FL_ALIGN_CENTER|FL_ALIGN_TOP);
         instruction_box->label("Click calculate on each row to see required fields in red.\n"
         "Fields used for calculation are shown in green.\n"
-        "Calculated field is shown in blue.");
+        "Calculated field is shown in blue.\n"
+        "Use return key to cycle between input fields.\n"
+        "Ctrl+return to calculate current field.");
         
         yy+=instruction_box->h() + 10;
+        
         // The clear button
-        Fl_Button *clear_button = new Fl_Button((WIDTH/2)-(cellw/2),yy,cellw,cellh,"Clear");
+        Fl_Button *clear_button = new Fl_Button((WIDTH/2)-(cellw/2),yy,cellw,cellh,"Clear (Ctrl+D)");
         clear_button->callback(clear_cb);
+        this->clear_button = clear_button;
         end();
+    }
+    
+    // Handling keyboard shortcuts
+    int handle(int e)
+    {
+        
+        int ret = Fl_Group::handle(e);
+        switch (e){            
+            case FL_KEYDOWN:
+            {
+                
+                if (Fl::event_key() == (FL_Enter) && (Fl::event_state(FL_CTRL)))
+                {
+                    auto current_widget_ptr = Fl::focus();
+                    for (int t = 0; t< ROWS; ++t)
+                    {
+                        if (w[t][1] == current_widget_ptr)
+                        {
+                            Fl_Button* b = (Fl_Button*) w[t][3];
+                            b->do_callback();
+                        }
+                            
+                        ret = 1;
+                    }
+                }
+                else if (Fl::event_key() == (FL_Enter))
+                {
+                    auto current_widget_ptr = Fl::focus();
+                    for (int t = 0; t< ROWS; ++t)
+                    {
+                        if (w[t][1] == current_widget_ptr)
+                        {
+                            if (ROWS)
+                            {
+                                Fl_Float_Input* input =  (t+1 == ROWS)? (Fl_Float_Input*) w[0][1] : (Fl_Float_Input*) w[t+1][1];
+                                input->take_focus();
+                            }
+                        }
+                            
+                        ret = 1;
+                    }
+                }
+                
+                if (Fl::event_key() == 'd' && (Fl::event_state(FL_CTRL)))
+                {
+                    clear_button->do_callback();
+                    ret = 1;
+                    
+                }
+                break;
+            }
+                    
+        }
+        
+        return (ret);
+//        return(1);
     }
 };
 
@@ -304,7 +360,10 @@ int main()
     
     Fl_Double_Window win(WIDTH,HEIGHT,"Molarity Calculator");
     Calculator calc(10,10,480,480);
+    
+    #ifdef __MINGW32__
     win.icon((char*)LoadIcon(fl_display,MAKEINTRESOURCE(101)));
+    #endif
     win.show();
     
     return (Fl::run());

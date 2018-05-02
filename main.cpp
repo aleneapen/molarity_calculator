@@ -10,17 +10,19 @@
 #include <stdlib.h>
 #include <map>
 #include <bitset>
+#include <FL/fl_ask.H>
 
 // For window icon on windows
 #ifdef __MINGW32__
 #include <FL/x.H> // For windows icon
-#include <windows.h> // For windows icon
+#include <windows.h>
+#include <FL/fl_ask.H> // For windows icon
 #endif
 
 #define COLS 4
 #define ROWS 5
 #define WIDTH 500
-#define HEIGHT 300
+#define HEIGHT 200
 
 
 // Constants: row headers
@@ -148,15 +150,17 @@ enum FontType {
 // Declarations of fltk callbacks
 void calculate_cb(Fl_Widget*, long int);
 void clear_cb(Fl_Widget*, void*);
+void help_cb(Fl_Widget*);
 
 
 // The Calculator container
 class Calculator: public Fl_Group {
     void* w[ROWS][COLS];        // widget pointers
     Fl_Button* clear_button;
+    Fl_Button* help_button;
     
 public:
-    
+
     // The get_value function returns the value from number input field at row p as a double.
     double get_value (long p) const
     {
@@ -276,22 +280,18 @@ public:
             
         }
         yy+=10;
-        // Instructions
-        Fl_Box* instruction_box = new Fl_Box(20,yy,WIDTH - 40,80);
-        instruction_box->box(FL_FLAT_BOX);
-        instruction_box->align(FL_ALIGN_INSIDE|FL_ALIGN_WRAP|FL_ALIGN_CENTER|FL_ALIGN_TOP);
-        instruction_box->label("Click calculate on each row to see required fields in red.\n"
-        "Fields used for calculation are shown in green.\n"
-        "Calculated field is shown in blue.\n"
-        "Use return key to cycle between input fields.\n"
-        "Ctrl+return to calculate current field.");
-        
-        yy+=instruction_box->h() + 10;
-        
+       
         // The clear button
-        Fl_Button *clear_button = new Fl_Button((WIDTH/2)-(cellw/2),yy,cellw,cellh,"Clear (Ctrl+D)");
+        Fl_Button *clear_button = new Fl_Button((WIDTH/4),yy,(WIDTH/4),cellh,"Clear (Ctrl+D)");
         clear_button->callback(clear_cb);
         this->clear_button = clear_button;
+        
+        
+        // Help dialog
+        Fl_Button *help_button = new Fl_Button((WIDTH/2),yy,(WIDTH/4),cellh,"Help");
+        help_button->callback(help_cb);
+        this->help_button = help_button;
+
         end();
     }
     
@@ -359,7 +359,7 @@ int main()
     
     
     Fl_Double_Window win(WIDTH,HEIGHT,"Molarity Calculator");
-    Calculator calc(10,10,480,480);
+    Calculator calc(10,10,WIDTH-20,HEIGHT-20);
     
     #ifdef __MINGW32__
     win.icon((char*)LoadIcon(fl_display,MAKEINTRESOURCE(101)));
@@ -377,6 +377,17 @@ void clear_cb(Fl_Widget* w, void* p)
     parent_calculator->clear_inputs();
     parent_calculator->set_colour(RowEnum::all,Colour::black,FontType::normal);
 }
+
+void help_cb(Fl_Widget* w) 
+{
+    fl_message_title("Help");
+    fl_message("> Click calculate on each row to see required fields in red.\n"
+        "> Fields used for calculation are shown in green.\n"
+        "> Calculated field is shown in blue.\n"
+        "> Use return key to cycle between input fields.\n"
+        "> Ctrl+return to calculate current field.");
+}
+
 
 void calculate_cb(Fl_Widget* w, long int p)
 {
@@ -461,7 +472,7 @@ void calculate_cb(Fl_Widget* w, long int p)
             {
                 if (volume && molarity)
                 {
-                    parent_calculator->set_value(p,volume*molarity/mass);
+                    parent_calculator->set_value(p,mass/(volume*molarity));
                     parent_calculator->set_value(2,volume*molarity);
                     good_font_condition &= RowEnum::mass | RowEnum::volume | RowEnum::molarity;
                     bad_font_condition = 0;

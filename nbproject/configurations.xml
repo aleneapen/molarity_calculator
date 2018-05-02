@@ -38,10 +38,10 @@
       <compileType>
         <ccTool>
           <standard>11</standard>
-          <commandLine>`fltk-config --cxxflags`</commandLine>
+          <commandLine>`fltk-config --cxxflags --use-images`</commandLine>
         </ccTool>
         <linkerTool>
-          <commandLine>`fltk-config --ldflags`</commandLine>
+          <commandLine>`fltk-config --ldflags --use-images`</commandLine>
         </linkerTool>
       </compileType>
       <item path=".gitignore" ex="false" tool="3" flavor2="0">

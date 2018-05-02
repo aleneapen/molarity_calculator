@@ -42,8 +42,8 @@ OBJECTFILES= \
 CFLAGS=
 
 # CC Compiler Flags
-CCFLAGS=`fltk-config --cxxflags` 
-CXXFLAGS=`fltk-config --cxxflags` 
+CCFLAGS=`fltk-config --cxxflags --use-images` 
+CXXFLAGS=`fltk-config --cxxflags --use-images` 
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -60,7 +60,7 @@ LDLIBSOPTIONS=
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/molarity_calculator.exe: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/molarity_calculator ${OBJECTFILES} ${LDLIBSOPTIONS} `fltk-config --ldflags`
+	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/molarity_calculator ${OBJECTFILES} ${LDLIBSOPTIONS} `fltk-config --ldflags --use-images`
 
 ${OBJECTDIR}/main.o: main.cpp
 	${MKDIR} -p ${OBJECTDIR}

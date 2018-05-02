@@ -16,7 +16,6 @@
 #ifdef __MINGW32__
 #include <FL/x.H> // For windows icon
 #include <windows.h>
-#include <FL/fl_ask.H> // For windows icon
 #endif
 
 #define COLS 4

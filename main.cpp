@@ -154,7 +154,12 @@ void help_cb(Fl_Widget*);
 
 // The Calculator container
 class Calculator: public Fl_Group {
-    void* w[ROWS][COLS];        // widget pointers
+//    void* w[ROWS][COLS];        // widget pointers
+    Fl_Box* box_ptrs[ROWS];
+    Fl_Input_Choice* input_choice_ptrs[ROWS];
+    Fl_Float_Input* float_input_ptrs[ROWS];
+    Fl_Button* calc_button_ptrs[ROWS];
+    
     Fl_Button* clear_button;
     Fl_Button* help_button;
     
@@ -163,10 +168,10 @@ public:
     // The get_value function returns the value from number input field at row p as a double.
     double get_value (long p) const
     {
-        const char* value = ((Fl_Float_Input*)(w[p][1]))->value();
+        const char* value = (float_input_ptrs[p])->value();
 
         double d_value = atof(value);
-        auto unit = ((Fl_Input_Choice*)(w[p][2]))->value();
+        auto unit = (input_choice_ptrs[p])->value();
         const std::map<const char*,double>* unit_map = &(units_vector[p]);
         for (auto& elem: *unit_map)
             if (strcmp(elem.first,unit) == 0)
@@ -179,18 +184,18 @@ public:
     {
         if (empty)
         {
-            ((Fl_Float_Input*)(w[p][1]))->value("");
+            (float_input_ptrs[p])->value("");
             return;
         }
             
             
-        auto unit = ((Fl_Input_Choice*)(w[p][2]))->value();
+        auto unit = (input_choice_ptrs[p])->value();
         const std::map<const char*,double>* unit_map = &(units_vector[p]);
         for (auto& elem: *unit_map)
             if (strcmp(elem.first,unit) == 0)
                 value/=elem.second;
         
-        ((Fl_Float_Input*)(w[p][1]))->value(std::to_string(value).c_str());
+        (float_input_ptrs[p])->value(std::to_string(value).c_str());
     }
     
     
@@ -205,7 +210,7 @@ public:
         unsigned j = 0; // To iterate through rows
         for (auto p = bin_str.crbegin(); p!=bin_str.crend();++p)
         {
-            text_widget = ((Fl_Widget *)(w[j++][0]));
+            text_widget = (Fl_Widget*)(box_ptrs[j++]);
             if (*p == '1')
             {
                 
@@ -225,7 +230,7 @@ public:
     void clear_inputs()
     {
         for (int r = 0; r!= ROWS; ++r)
-            ((Fl_Float_Input*)(w[r][1]))->value("");
+            (float_input_ptrs[r])->value("");
     }
     
     // Constructor
@@ -239,20 +244,20 @@ public:
             for ( int c=0; c<COLS; c++ ) {
                 if ( c==0 ) {
                     // c == 0 is the row header column
-                    Fl_Box *box = new Fl_Box(xx,yy,cellw,cellh,row_header[r]);
+                    Fl_Box* box = new Fl_Box(xx,yy,cellw,cellh,row_header[r]);
                     box->box(FL_FLAT_BOX);
                     box->align(FL_ALIGN_INSIDE|FL_ALIGN_RIGHT);
-                    w[r][c] = (void*)box;
+                    this->box_ptrs[r] = box;
                 } else if ( c==1 ) {
                     // c == 1 is the number input column
                     
-                    Fl_Float_Input *in = new Fl_Float_Input(xx,yy,cellw+20,cellh); // Extra width for number input field
+                    Fl_Float_Input* in = new Fl_Float_Input(xx,yy,cellw+20,cellh); // Extra width for number input field
                     in->box(FL_BORDER_BOX);
-                    w[r][c] = (void*)in;
+                    this->float_input_ptrs[r] = in;
                     xx+=20; // Compensate for extra width
                 } else if (c==2) {
                     // c == 2 is column for units
-                    Fl_Input_Choice *choice = new Fl_Input_Choice(xx,yy,cellw,cellh);
+                    Fl_Input_Choice* choice = new Fl_Input_Choice(xx,yy,cellw,cellh);
                     
                     std::vector<const char*> choice_labels;
                     std::map<const char*,double> units_map = units_vector[r];
@@ -263,12 +268,12 @@ public:
                         choice->add(i);
                     choice->value(choice_labels[0]);
                     choice->input()->readonly(1);
-                    w[r][c] = (void*)choice;
+                    this->input_choice_ptrs[r] = choice;
                 } else if (c==3) {
                     // c == 2 is column for calculation buttons
-                    Fl_Button *calc_button = new Fl_Button(xx,yy,cellw,cellh,"Calculate");
+                    Fl_Button* calc_button = new Fl_Button(xx,yy,cellw,cellh,"Calculate");
                     calc_button->callback(calculate_cb,r);                    
-                    w[r][c] = (void*)calc_button;
+                    this->calc_button_ptrs[r] = calc_button;
                     
                 }
                 
@@ -294,6 +299,23 @@ public:
         end();
     }
     
+    
+    // Destructor
+    ~Calculator() 
+    {
+        for (unsigned i = 0; i < ROWS; ++i)
+        {
+            delete box_ptrs[i];
+            delete calc_button_ptrs[i];
+            delete float_input_ptrs[i];
+            delete input_choice_ptrs[i];
+            
+        }
+        delete help_button;
+        delete clear_button;
+    }
+    
+
     // Handling keyboard shortcuts
     int handle(int e)
     {
@@ -308,10 +330,9 @@ public:
                     auto current_widget_ptr = Fl::focus();
                     for (int t = 0; t< ROWS; ++t)
                     {
-                        if (w[t][1] == current_widget_ptr)
+                        if (float_input_ptrs[t] == current_widget_ptr)
                         {
-                            Fl_Button* b = (Fl_Button*) w[t][3];
-                            b->do_callback();
+                            (calc_button_ptrs[t])->do_callback();
                         }
                             
                         ret = 1;
@@ -322,11 +343,11 @@ public:
                     auto current_widget_ptr = Fl::focus();
                     for (int t = 0; t< ROWS; ++t)
                     {
-                        if (w[t][1] == current_widget_ptr)
+                        if (float_input_ptrs[t] == current_widget_ptr)
                         {
                             if (ROWS)
                             {
-                                Fl_Float_Input* input =  (t+1 == ROWS)? (Fl_Float_Input*) w[0][1] : (Fl_Float_Input*) w[t+1][1];
+                                Fl_Float_Input* input =  (t+1 == ROWS)? float_input_ptrs[0] : float_input_ptrs[t+1];
                                 input->take_focus();
                             }
                         }
